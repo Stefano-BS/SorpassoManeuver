@@ -1,6 +1,8 @@
 #OVERTAKING MANEUVER ON PLEXE3
 This project implements a simple overtaking maneuver for platoons driving on
 ad highway. It is based on PLEXE on VEINS on Omnet++ and SUMO
+In order to make it work you must also update VEINS' TraCICommandInterface
+class with the oen here provided (in veins/src/veins/modules/mobility/traci)
 
 Follows PLEXE's README
 ----------------------------------------------------------------------------
