@@ -1,3 +1,9 @@
+#OVERTAKING MANEUVER ON PLEXE3
+This project implements a simple overtaking maneuver for platoons driving on
+ad highway. It is based on PLEXE on VEINS on Omnet++ and SUMO
+
+Follows PLEXE's README
+----------------------------------------------------------------------------
 
 Plexe - The platooning extension for Veins
 
