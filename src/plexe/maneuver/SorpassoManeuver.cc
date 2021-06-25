@@ -2,7 +2,7 @@
 #include "plexe/apps/GeneralPlatooningApp.h"
 
 #define cambiaColore traciVehicle->setColor(TraCIColor(rand()%255, rand()%255, rand()%255, 255));
-#define soglia 2
+#define soglia 3
 
 namespace plexe {
 
@@ -168,7 +168,7 @@ namespace plexe {
     bool SorpassoManeuver::radar(bool destra) {
         for (int indietro=0; indietro<2; indietro++) {
             double *r = plexeTraciVehicle->getRadarString(destra, indietro);
-
+            if (r == nullptr) continue;
             int i = 0;
             if (r[0] != -1) {
                 double p1l = r[0], p2l = r[1], v = r[2];

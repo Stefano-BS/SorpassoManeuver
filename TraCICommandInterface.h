@@ -170,7 +170,7 @@ public:
         void getParameter(const std::string& parameter, int& value);
         void getParameter(const std::string& parameter, double& value);
         void getParameter(const std::string& parameter, std::string& value);
-        double* radarLaterale(bool destra, bool indietro);
+        double* radarLaterale(bool destra, bool indietro, TraCIConnection::Result* result = nullptr);
         void posizioneDi(std::string id, double *p1, double *p2, double *p3);
         double getSpeedOf(std::string id);
 

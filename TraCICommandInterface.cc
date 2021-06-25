@@ -1579,6 +1579,10 @@ void TraCICommandInterface::Vehicle::getParameter(const std::string& parameter, 
 }
 
 
+
+
+
+
 void TraCICommandInterface::Vehicle::posizioneDi(std::string id, double *p1, double *p2, double *p3) {
     const uint8_t posiz = 0x42;
     TraCIBuffer request = TraCIBuffer() << posiz << id;
@@ -1608,15 +1612,15 @@ double TraCICommandInterface::Vehicle::getSpeedOf(std::string id) {
     return traci->genericGetDouble(CMD_GET_VEHICLE_VARIABLE, id, VAR_SPEED, RESPONSE_GET_VEHICLE_VARIABLE);
 }
 
-double* TraCICommandInterface::Vehicle::radarLaterale(bool destra, bool indietro) {
+double* TraCICommandInterface::Vehicle::radarLaterale(bool destra, bool indietro, TraCIConnection::Result* result) {
     const uint8_t neigh = 0xbf;
     uint8_t query = indietro? (destra? 0x01 : 0x00) : (destra? 0x03 : 0x02);
 
     std::list<std::string> ret = {""};
     TraCIBuffer request = TraCIBuffer() << neigh << nodeId << TYPE_UBYTE << query;
+    TraCIBuffer buf = connection->query(CMD_GET_VEHICLE_VARIABLE, request, result);
 
-    uint8_t resultTypeId = TYPE_STRINGLIST;
-    TraCIBuffer buf = connection->query(CMD_GET_VEHICLE_VARIABLE, request);
+    if ((result != nullptr) && (!result->success)) return nullptr;
 
     uint8_t cmdLength;
     buf >> cmdLength;
@@ -1635,6 +1639,7 @@ double* TraCICommandInterface::Vehicle::radarLaterale(bool destra, bool indietro
     ASSERT(objectId_r == objectId);
     uint8_t resType_r;
     buf >> resType_r;
+    uint8_t resultTypeId = TYPE_STRINGLIST;
     ASSERT(resType_r == resultTypeId);
     uint32_t count;
     buf >> count;
@@ -1643,16 +1648,13 @@ double* TraCICommandInterface::Vehicle::radarLaterale(bool destra, bool indietro
         buf >> id;
         ret.push_back(id);
     }
-
     ASSERT(buf.eof());
-
 
     double *value = (double*)calloc(5+ret.size()*3, sizeof(double));
     unsigned int i=3;
     auto it = ret.cbegin();
 
     for (; it != ret.cend(); ++it) {
-        //value.append(*it);
         if (it->length() >0) {
             posizioneDi(*it, &value[i], &value[i+1], &value[i+2]);
             i+=3;
@@ -1665,15 +1667,6 @@ double* TraCICommandInterface::Vehicle::radarLaterale(bool destra, bool indietro
     }
     else value[0] = -1;
     return value;
-    /*TraCIBuffer response =
-            traci->connection.query(
-                    CMD_GET_VEHICLE_VARIABLE,
-                    TraCIBuffer() << static_cast<uint8_t>(VAR_PARAMETER) << nodeId << static_cast<uint8_t>(varp) << static_cast<uint8_t>(query));
-                    //TraCIBuffer() << static_cast<uint8_t>(varp) << static_cast<uint8_t>(query));*/
-    /*ret = traci->genericGetStringList(CMD_GET_VEHICLE_VARIABLE, nodeId, varp, RESPONSE_GET_VEHICLE_VARIABLE);
-    (uint8_t commandId, std::string objectId, uint8_t variableId, uint8_t responseId, TraCIConnection::Result* result)
-    traci->genericGetStringList(CMD_GET_VEHICLE_VARIABLE, nodeId, VAR_EDGES, RESPONSE_GET_VEHICLE_VARIABLE);
-    value = ret.front();*/
 }
 
 } // namespace veins

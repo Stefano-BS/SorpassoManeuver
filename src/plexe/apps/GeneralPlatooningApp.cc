@@ -28,17 +28,12 @@ void GeneralPlatooningApp::initialize(int stage)
         std::string maneuverName = par("maneuver").stdstringValue();
         if (maneuverName == "JoinAtBack")
             activeManeuver = joinManeuver = new JoinAtBack(this);
-        //else throw new cRuntimeError("Invalid join maneuver implementation chosen");
-
-        //std::string mergeManeuverName = par("mergeManeuver").stdstringValue();
-        if (maneuverName == "MergeAtBack")
+        else if (maneuverName == "MergeAtBack")
             activeManeuver = mergeManeuver = new MergeAtBack(this);
-        //else throw new cRuntimeError("Invalid merge maneuver implementation chosen");
-            
-        //std::string sorpassoManeuverName = par("sorpassoManeuver").stdstringValue();
-        if (maneuverName == "Sorpasso")
+        else if (maneuverName == "Sorpasso")
             activeManeuver = sorpassoManeuver = new SorpassoManeuver(this);
-        else throw new cRuntimeError("Invalid maneuver implementation chosen");
+        else
+            throw new cRuntimeError("Invalid maneuver implementation chosen");
 
         scenario = FindModule<BaseScenario*>::findSubModule(getParentModule());
     }
@@ -107,8 +102,7 @@ void GeneralPlatooningApp::sendUnicast(cPacket* msg, int destination)
     sendDown(frame);
 }
 
-void GeneralPlatooningApp::handleLowerMsg(cMessage* msg)
-{
+void GeneralPlatooningApp::handleLowerMsg(cMessage* msg) {
     BaseFrame1609_4* frame = check_and_cast<BaseFrame1609_4*>(msg);
 
     cPacket* enc = frame->getEncapsulatedPacket();
@@ -116,6 +110,7 @@ void GeneralPlatooningApp::handleLowerMsg(cMessage* msg)
 
     if (enc->getKind() == MANEUVER_TYPE) {
         ManeuverMessage* mm = check_and_cast<ManeuverMessage*>(frame->decapsulate());
+
         if (UpdatePlatoonData* msg = dynamic_cast<UpdatePlatoonData*>(mm)) {
             handleUpdatePlatoonData(msg);
             delete msg;
@@ -124,14 +119,11 @@ void GeneralPlatooningApp::handleLowerMsg(cMessage* msg)
             handleUpdatePlatoonFormation(msg);
             delete msg;
         }
-        else {
-            onManeuverMessage(mm);
-        }
+        else onManeuverMessage(mm);
+
         delete frame;
     }
-    else {
-        BaseApp::handleLowerMsg(msg);
-    }
+    else BaseApp::handleLowerMsg(msg);
 }
 
 void GeneralPlatooningApp::handleUpdatePlatoonData(const UpdatePlatoonData* msg)
