@@ -176,9 +176,12 @@ namespace plexe {
                 while (r[i] != -1) {
                     //if ((p1l-r[i])*(p1l-r[i]) + (p2l-r[i+1])*(p2l-r[i+1]) < 500) return false; funzione che impiega solo distanza euclidea
                     // Serve che la (stima della) distanza sia tale da non essere coperta in due secondi (accettabile?)
-                    double distanza = pow(pow(p1l-r[i], 2) + pow(p2l-r[i+1], 2), 0.5) - traciVehicle->getLength()*1.5;
+                    double distanza = pow(pow(p1l-r[i], 2) + pow(p2l-r[i+1], 2), 0.5);
                     double dt = distanza / (v - r[i+2]);
-                    if (distanza<0 || (indietro && dt<0 && dt>-soglia) || (!indietro && dt>0 && dt < soglia)) {
+                    double minima = 0, rs = 0;
+                    if (indietro == 0 && positionHelper->getPosition() > 0)  plexeTraciVehicle->getRadarMeasurements(minima, rs);
+                    minima += traciVehicle->getLength()*1.5;
+                    if (distanza < minima || (indietro && dt<0 && dt>-soglia) || (!indietro && dt>0 && dt < soglia)) {
                         free(r);
                         return false;
                     }

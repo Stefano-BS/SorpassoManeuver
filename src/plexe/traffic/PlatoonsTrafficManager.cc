@@ -54,7 +54,7 @@ void PlatoonsTrafficManager::handleSelfMsg(cMessage* msg)
         vveloce.position = 10;
         vveloce.speed = traffico>2 ? 40: 0;
         addVehicleToQueue(0, vveloce);
-        scheduleAt(simTime()+2+rand()%3, nuovaAutoMessage);
+        scheduleAt(simTime()+2+rand()%4, nuovaAutoMessage);
     }
 }
 
@@ -89,7 +89,7 @@ void PlatoonsTrafficManager::insertPlatoons()
         addVehicleToQueue(0, vcamion);
         vcamion.position = currentRoadPosition + 500;
         addVehicleToQueue(0, vcamion);
-        vcamion.position = currentRoadPosition + 600;
+        vcamion.position = currentRoadPosition + 590;
         addVehicleToQueue(0, vcamion);
     }
     
