@@ -41,7 +41,7 @@ namespace plexe {
             plexeTraciVehicle->getRadarMeasurements(distance, relativeSpeed);
             deltav = traciVehicle->getSpeed() - leaderSpeed;
             if (-(deltav + relativeSpeed) / distance > 0.1) appl->iniziaSorpasso(positionHelper->getPlatoonId(),positionHelper->getPosition(),positionHelper->getPosition());
-            scheduleAt(simTime()+1, controlloLentoLeader);
+            scheduleAt(simTime()+par("tRadar"), controlloLentoLeader);
         }
     }
 

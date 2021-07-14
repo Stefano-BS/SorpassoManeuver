@@ -17,9 +17,7 @@ using namespace veins;
 namespace plexe {
 
 struct SorpassoManeuverParameters {
-    int platoonId;
-    int leaderId;
-    int position;
+    double soglia, tAttesaRisposta, tRadar, tNoRadar;
 };
 
 enum class StatoSorpasso {

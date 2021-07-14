@@ -29,6 +29,10 @@ parameters:
 
     // implementation of the maneuver to be used
     string maneuver;
+    double soglia = default(3);
+    double tAttesaRisposta = default(0.01);
+    double tRadar = default(0.5);
+    double tNoRadar = default(10);
 
     int headerLength @unit("bit") = default(0 bit);
     @display("i=block/app2");

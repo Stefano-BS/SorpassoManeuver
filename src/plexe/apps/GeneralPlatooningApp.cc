@@ -245,11 +245,12 @@ void GeneralPlatooningApp::iniziaSorpasso(int platoonId, int leaderId, int posit
     //SorpassoManeuver* m = dynamic_cast<SorpassoManeuver*>(maneuver);
     if (sorpassoManeuver->manovrando() || positionHelper->getPlatoonLane() == plexeTraciVehicle->getLanesCount()) return;
 
-    /*SorpassoManeuverParameters params;
-    params.platoonId = platoonId;
-    params.leaderId = leaderId;
-    params.position = position;*/
-    sorpassoManeuver->startManeuver(nullptr /*&params*/);
+    SorpassoManeuverParameters params;
+    params.soglia = par("soglia").doubleValue();
+    params.tAttesaRisposta = par("tAttesaRisposta").doubleValue();
+    params.tRadar = par("tRadar").doubleValue();
+    params.tNoRadar = par("tNoRadar").doubleValue();
+    sorpassoManeuver->startManeuver(&params);
 }
 
 } // namespace plexe

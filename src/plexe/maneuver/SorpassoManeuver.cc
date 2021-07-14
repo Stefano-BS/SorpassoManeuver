@@ -2,7 +2,8 @@
 #include "plexe/apps/GeneralPlatooningApp.h"
 
 #define cambiaColore traciVehicle->setColor(TraCIColor(rand()%255, rand()%255, rand()%255, 255));
-#define soglia 3
+
+static double soglia, tAttesaRisposta, tRadar, tNoRadar;
 
 namespace plexe {
 
@@ -14,10 +15,14 @@ namespace plexe {
     }
 
     void SorpassoManeuver::startManeuver(const void* parameters) {
-        if (capo = positionHelper->isLeader()) {
-            //SorpassoManeuverParameters* pars = (SorpassoManeuverParameters*) parameters;
-            cambiaColore
+        SorpassoManeuverParameters* pars = (SorpassoManeuverParameters*) parameters;
+        soglia = pars->soglia;
+        tAttesaRisposta = pars->tAttesaRisposta;
+        tRadar = pars->tRadar;
+        tNoRadar = pars->tNoRadar;
 
+        if (capo = positionHelper->isLeader()) {
+            //cambiaColore
             if (!radar(false)) return;
 
             mandaFollowers(1, true, true);
@@ -25,7 +30,7 @@ namespace plexe {
             // TIMER: Se qualcuno non risponde si torna in quiete
             cMessage * msg = new cMessage("timer");
             msg->setKind(1);
-            app->schtimer(simTime()+1, msg);
+            app->schtimer(simTime()+tAttesaRisposta, msg);
         }
     }
 
@@ -59,7 +64,7 @@ namespace plexe {
                 int dimPlatoon = positionHelper->getPlatoonSize(), i=0;
                 tempiConferma[m->getDa()-1] = ora;
                 for (simtime_t t=tempiConferma[i]; i<dimPlatoon-1; t=tempiConferma[++i])
-                    if (ora.dbl() - t.dbl() > 1) return;    // Confronto da controllare
+                    if (ora.dbl() - t.dbl() > tAttesaRisposta*3) return;    // Confronto da controllare
                 // Hanno detto tutti che c'è la strada libera
                 bool risultatoMisurazione = radar(true); // MISURAZIONE RADAR
                 if (risultatoMisurazione) {
@@ -82,7 +87,7 @@ namespace plexe {
                     // TIMER: Se il leader non conferma in tempo pazienza, la manovra verrà reinnescata da fuori
                     cMessage * msg = new cMessage("timer");
                     msg->setKind(1);
-                    app->schtimer(simTime()+0.1, msg);
+                    app->schtimer(simTime()+tAttesaRisposta, msg);
                 }
                 else STATO = StatoSorpasso::QUIETE;
             }
@@ -93,7 +98,7 @@ namespace plexe {
                 // TIMER: Al termine del quale fare la prima misurazione radar
                 cMessage * msg = new cMessage("timer");
                 msg->setKind(0);
-                app->schtimer(simTime()+10, msg);
+                app->schtimer(simTime()+tNoRadar, msg);
             }
             else if (STATO == StatoSorpasso::SORPASSO && m->getTipo() == 5) {
                 // ESECUZIONE RIENTRO
@@ -112,7 +117,7 @@ namespace plexe {
                 // TIMER: Al termine del quale fare un'altra misurazione radar
                 cMessage * msg = new cMessage("timer");
                 msg->setKind(0);
-                app->schtimer(simTime()+1, msg);
+                app->schtimer(simTime()+tRadar, msg);
             }
         }
         else if (kind == 1) { // Timeout inizio manovra
@@ -120,13 +125,10 @@ namespace plexe {
         }
     }
 
-    void SorpassoManeuver::onPlatoonBeacon(const PlatooningBeacon* pb) {
-        double accel = traciVehicle->getAcceleration()*100;
-        if (accel != 0 && manovrando()) positionHelper->statistica(accel);
-    }
+    void SorpassoManeuver::onPlatoonBeacon(const PlatooningBeacon* pb) {}
     void SorpassoManeuver::abortManeuver() {}
     void SorpassoManeuver::onFailedTransmissionAttempt(const ManeuverMessage* mm) {
-        throw cRuntimeError("Impossibile mandare PACCHETTO %s. Maximum number of unicast retries reached", mm->getName());
+        throw cRuntimeError("Impossibile mandare pacchetto %s. Maximum number of unicast retries reached", mm->getName());
     }
 
     bool SorpassoManeuver::manovrando() {
@@ -175,12 +177,12 @@ namespace plexe {
                 i = 3;
                 while (r[i] != -1) {
                     //if ((p1l-r[i])*(p1l-r[i]) + (p2l-r[i+1])*(p2l-r[i+1]) < 500) return false; funzione che impiega solo distanza euclidea
-                    // Serve che la (stima della) distanza sia tale da non essere coperta in due secondi (accettabile?)
+                    // Serve che la (stima della) distanza sia tale da non essere coperta in --soglia-- secondi
                     double distanza = pow(pow(p1l-r[i], 2) + pow(p2l-r[i+1], 2), 0.5);
                     double dt = distanza / (v - r[i+2]);
                     double minima = 0, rs = 0;
-                    if (indietro == 0 && positionHelper->getPosition() > 0)  plexeTraciVehicle->getRadarMeasurements(minima, rs);
-                    minima += traciVehicle->getLength()*1.5;
+                    if (indietro == 0 && !positionHelper->isLeader())  plexeTraciVehicle->getRadarMeasurements(minima, rs);
+                    minima += traciVehicle->getLength()*2;
                     if (distanza < minima || (indietro && dt<0 && dt>-soglia) || (!indietro && dt>0 && dt < soglia)) {
                         free(r);
                         return false;
